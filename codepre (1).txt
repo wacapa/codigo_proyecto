@@ -1,0 +1,1517 @@
+#include <avr/io.h>
+#include <util/delay.h> 
+#include <Arduino.h>
+#include <math.h>
+#include <Keypad.h>
+
+//botones , señales, etc
+int s1=2;
+int s2=3;
+int s3=4;
+int s4=5;
+// tiempos
+int t1=3000;
+int t2=1500;
+int t3=1000;
+int t4=1000;
+int ret=800;
+
+
+//cyclo 1
+int k1=0;
+int k2=0;
+int k3=0;
+//cyclo 2
+int k21=0;
+int k22=0;
+int k23=0;
+int k24=0;
+//cyclo 3
+int k31=0;
+int k311=0;
+int k312=0;
+int k313=0;
+int k314=0;
+
+int k32=0;
+int k321=0;
+int k322=0;
+int k323=0;
+int k324=0;
+
+
+int k33=0;
+int k331=0;
+int k332=0;
+int k333=0;
+int k334=0;
+
+int k34=0;
+int k341=0;
+int k342=0;
+int k343=0;
+int k344=0;
+
+//Activacion motores
+void mot1(){
+  PORTB|=(0B0001);
+  //PORTB|=(0B1110);
+}
+void mot2(){
+  PORTB|=(0B0010);
+  //PORTB|=(0B1101);
+}
+void mot3(){
+  PORTB|=(0B0100);
+  //PORTB|=(0B1011);
+}
+void mot4(){
+  PORTB|=(0B1000);
+  //PORTB|=(0B0111);
+}
+void off(){
+  PORTB=(0B0000);
+  //PORTB=(0B1111);
+}
+
+
+///////////////////
+int vaso(int distancia){
+  int ledd=4;
+  if ((distancia>10) && (distancia<30)){
+      PORTB |=(1<<ledd);
+      return 1;  
+  }
+  else{
+      PORTB&= ~(1<<ledd);
+      return 0;
+  }
+   
+}
+int main() {
+    DDRB = 0b1111;  //Pin 8.9,10,11 del arduino salidas
+    DDRD &= ~(1 << s1); //Pin 2 como entrada
+    DDRD &= ~(1 << s2);
+    DDRD &= ~(1 << s3);
+    DDRD &= ~(1 << s4);
+    PORTB=0B1111;//INICIALIZACION APAGADA
+    // configuracion inicial del ADC
+    ADMUX = 0B01000000; 
+    ADCSRA = 0B00000111;
+    ADCSRB = 0B00000000;
+    DIDR0 =  0B00000001;
+   /////parte tecaldo
+    
+    //Primero pregunta la combinacion
+    while (1){
+      ADMUX = 0B01000000; 
+      ADCSRA =0B11000111;  
+      while(ADCSRA & (1<<ADSC)); // Corrobora que se leyeron todos los datos de entrada
+
+      /*double Vadc = (2*ADC)/1023.0; //7seg double Vadc = (5*ADC)/1023.0;
+    //distancia(cm) = 27.86 * [lectura en Voltios]^-1.15
+      int distancia_real = 27.86*(pow(Vadc,-1.15)); // 10cm hasta 80cm
+    // Asumir desplazamiento de la grafica en -10[cm]
+      int distancia_ajustada = distancia_real-10; // 0[cm] hasta 70[cm]*/
+  
+      //int vas=vaso(distancia_ajustada);
+      int vas=1;
+
+//////////////////////////Teclado
+      
+
+
+      while (((PIND & (1<<s1)) || (k1==1)) && vas==1 ){
+        k1=1;
+        _delay_ms(ret);
+        while ((PIND & (1<<s1))){
+          mot1();
+          _delay_ms(t1);
+          off();
+          k1=0;
+
+        }
+        while ((PIND & (1<<s2))){
+          mot2();
+          _delay_ms(t1);
+          off();
+          k1=0;
+
+        }
+        while ((PIND & (1<<s3))){
+          mot3();
+          _delay_ms(t1);
+          off();
+          k1=0;
+
+        }
+        while (PIND & (1<<s4)){
+
+          mot4();
+          _delay_ms(t1);
+          off();
+          k1=0;
+
+        }
+       
+
+       
+      }
+      //////////////////////////////////////pulsacion 2
+      while (((PIND & (1<<s2)) || (k2==1)) && vas==1){
+        k2=1;
+        _delay_ms(ret);
+        while ((PIND & (1<<s1)) || (k21==1)){
+          k21=1;
+          _delay_ms(ret);
+          while (PIND & (1<<s1)){
+            mot1();
+            _delay_ms(t2);
+            off();
+
+            mot1();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k21=0;
+           
+          }
+          while (PIND & (1<<s2)){
+            mot1();
+            _delay_ms(t2);
+            off();
+
+            mot2();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k21=0;
+          }
+          while (PIND & (1<<s3)){
+            mot1();
+            _delay_ms(t2);
+            off();
+
+            mot3();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k21=0;
+           
+          }
+          while (PIND & (1<<s4)){
+            mot1();
+            _delay_ms(t2);
+            off();
+
+            mot4();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k21=0;            
+          }
+
+        }
+        //eleccion 2 motor
+        while ((PIND & (1<<s2)) || (k22==1)){
+          k22=0;
+          _delay_ms(ret);
+          while (PIND & (1<<s1)){
+            mot2();
+            _delay_ms(t2);
+            off();
+
+            mot1();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k22=0;
+           
+          }
+          while (PIND & (1<<s2)){
+            mot2();
+            _delay_ms(t2);
+            off();
+
+            mot2();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k22=0;
+          }
+          while (PIND & (1<<s3)){
+            mot2();
+            _delay_ms(t2);
+            off();
+
+            mot3();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k22=0;
+           
+          }
+          while (PIND & (1<<s4)){
+            mot2();
+            _delay_ms(t2);
+            off();
+
+            mot4();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k22=0;            
+          }
+
+
+
+        }
+
+        //////////////////////opcion 2 motores eleccion 3
+        while ((PIND & (1<<s3)) || (k23==1)){
+          k23=1;
+          _delay_ms(ret);
+          while (PIND & (1<<s1)){
+            mot3();
+            _delay_ms(t2);
+            off();
+
+            mot1();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k23=0;
+           
+          }
+          while (PIND & (1<<s2)){
+            mot3();
+            _delay_ms(t2);
+            off();
+
+            mot2();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k23=0;
+          }
+          while (PIND & (1<<s3)){
+            mot3();
+            _delay_ms(t2);
+            off();
+
+            mot3();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k23=0;
+           
+          }
+          while (PIND & (1<<s4)){
+            mot3();
+            _delay_ms(t2);
+            off();
+
+            mot4();
+            _delay_ms(t2);
+            off();  
+            k2=0;
+            k23=0; 
+                     
+
+          }
+        }
+
+        /////////////elecion 2 combinaciones comienza con opcion 4
+        while ((PIND & (1<<s4)) || (k24==1)){
+          k24=1;
+          _delay_ms(ret);
+          while (PIND & (1<<s1)){
+            mot4();
+            _delay_ms(t2);
+            off();
+
+            mot1();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k24=0;
+           
+          }
+          while (PIND & (1<<s2)){
+            mot4();
+            _delay_ms(t2);
+            off();
+
+            mot2();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k24=0;
+          }
+          while (PIND & (1<<s3)){
+            mot4();
+            _delay_ms(t2);
+            off();
+
+            mot3();
+            _delay_ms(t2);
+            off();
+            k2=0;
+            k24=0;
+           
+          }
+          while (PIND & (1<<s4)){
+            mot4();
+            _delay_ms(t2);
+            off();
+
+            mot4();
+            _delay_ms(t2);
+            off(); 
+            k2=0;
+            k24=0;          
+          }
+         
+        }
+       
+
+       
+       
+      }
+//////////////////////////////////////3 combinaciones
+      while (((PIND & (1<<s3)) || (k3==1)) && vas==1){
+        k3=1;
+        _delay_ms(ret);
+        while ((PIND & (1<<s1)) || (k31==1)){////////////////
+          k31=1;
+          _delay_ms(ret);
+          while ((PIND & (1<<s1)) || (k311==1)){/////
+            k311=1;
+            _delay_ms(ret);
+            while (PIND & (1<<s1)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k311=0;
+                       
+
+            }
+            while (PIND & (1<<s2)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k311=0;
+         
+            }
+            while (PIND & (1<<s3)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k311=0;
+         
+            }
+            while (PIND & (1<<s4)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k311=0;
+         
+            }
+           
+          ///////////////3 combinaciones 1 motor eleccion 2
+          }
+          while ((PIND & (1<<s2)) || (k312==1)){
+            k312=1;
+            _delay_ms(ret);
+            while (PIND & (1<<s1)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k312=0;
+           
+
+            }
+            while (PIND & (1<<s2)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k312=0;
+         
+            }
+            while (PIND & (1<<s3)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k312=0;
+         
+            }
+            while (PIND & (1<<s4)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k312=0;
+         
+            }
+         
+          }
+          /////////////////combinacion 3 eleccion 1-3-x
+          while ((PIND & (1<<s3)) || (k313==1)){
+            k313=1;
+            _delay_ms(ret);
+            while (PIND & (1<<s1)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k313=0;
+           
+
+            }
+            while (PIND & (1<<s2)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k313=0;
+         
+            }
+            while (PIND & (1<<s3)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k313=0;
+         
+            }
+            while (PIND & (1<<s4)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k313=0;
+         
+            }
+         
+          }
+          //////////////////combinacion 3 , elecion 1-4-x
+          while ((PIND & (1<<s4)) || (k314==1)){
+            k314=1;
+            _delay_ms(ret);
+            while (PIND & (1<<s1)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k314=0;
+           
+
+            }
+            while (PIND & (1<<s2)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k314=0;
+         
+            }
+            while (PIND & (1<<s3)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k314=0;
+         
+            }
+            while (PIND & (1<<s4)){
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k31=0;
+              k314=0;
+         
+            }
+         
+          }
+
+
+
+        }
+        //////////////////////combinacion  3, elecion 2-x-x
+        while ((PIND & (1<<s2)) || (k32==1)){//////////////////////////
+          k32=1;
+          _delay_ms(ret);
+          while ((PIND & (1<<s1)) || (k321==1)){/////
+            k321=1;
+            _delay_ms(ret);
+            while (PIND & (1<<s1)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k321=0;
+                       
+
+            }
+            while (PIND & (1<<s2)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k321=0;
+         
+            }
+            while (PIND & (1<<s3)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k321=0;
+         
+            }
+            while (PIND & (1<<s4)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k321=0;
+         
+            }
+           
+
+          }
+          while ((PIND & (1<<s2)) || (k322==1)){
+            k322=1;
+            _delay_ms(ret);
+            while (PIND & (1<<s1)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k322=0;
+           
+
+            }
+            while (PIND & (1<<s2)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k322=0;
+         
+            }
+            while (PIND & (1<<s3)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k322=0;
+         
+            }
+            while (PIND & (1<<s4)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k322=0;
+         
+            }
+         
+          }
+          while ((PIND & (1<<s3)) || (k323==1)){
+            k323=1;
+            _delay_ms(ret);
+            while (PIND & (1<<s1)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k323=0;
+           
+
+            }
+            if (PIND & (1<<s2)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k323=0;
+         
+            }
+            if (PIND & (1<<s3)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k323=0;
+         
+            }
+            if (PIND & (1<<s4)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k323=0;
+         
+            }
+         
+          }
+          //////////////////////2-4-x
+          while ((PIND & (1<<s4)) || (k324==1)){
+            k324=1;
+            _delay_ms(ret);
+            while (PIND & (1<<s1)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k324=0;
+           
+
+            }
+            while (PIND & (1<<s2)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k324=0;
+         
+            }
+            while (PIND & (1<<s3)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k324=0;
+         
+            }
+            while (PIND & (1<<s4)){
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k32=0;
+              k324=0;
+         
+            }
+         
+          }
+
+           
+
+         
+        }
+        ////////////////////combinacion 3-x-x
+        while ((PIND & (1<<s3)) || (k33==1)){///////////////////
+          k33=1;
+          _delay_ms(ret);
+          while ((PIND & (1<<s1)) || (k331==1)){/////
+            k331=1;
+            _delay_ms(ret);
+            while (PIND & (1<<s1)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k331=0;
+                       
+
+            }
+            while (PIND & (1<<s2)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k331=0;
+         
+            }
+            while (PIND & (1<<s3)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k331=0;
+         
+            }
+            while (PIND & (1<<s4)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k331=0;
+         
+            }
+           
+
+          }
+          //////////////////eleccion 3-2-x
+          while ((PIND & (1<<s2)) || (k332==1)){
+            k332=1;
+            _delay_ms(ret);
+            while (PIND & (1<<s1)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k332=0;
+             
+           
+
+            }
+            while (PIND & (1<<s2)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k332=0;
+         
+            }
+            while (PIND & (1<<s3)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k332=0;
+         
+            }
+            if (PIND & (1<<s4)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k332=0;
+         
+            }
+         
+          }
+          ///////////////combinaicon 3-3-x
+          while ((PIND & (1<<s3)) || (k333==1)){
+            k333=1;
+            _delay_ms(ret);
+            if (PIND & (1<<s1)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k333=0;
+           
+
+            }
+            if (PIND & (1<<s2)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k333=0;
+         
+            }
+            if (PIND & (1<<s3)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k333=0;
+         
+            }
+            if (PIND & (1<<s4)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k333=0;
+         
+            }
+         
+          }
+          ////////////combinacion 3-4-x
+          while ((PIND & (1<<s4)) || (k334==1)){
+            k334=1;
+            _delay_ms(ret);
+            if (PIND & (1<<s1)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k334=0;
+           
+
+            }
+            if (PIND & (1<<s2)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k334=0;
+         
+            }
+            if (PIND & (1<<s3)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k334=0;
+         
+            }
+            if (PIND & (1<<s4)){
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k33=0;
+              k334=0;
+         
+            }
+         
+          }
+
+        }
+        ///////////////////////combinaicon 4-x-x
+        while ((PIND & (1<<s4)) || (k34==1)){//////////////////////
+          k34=1;
+          _delay_ms(ret);
+          while ((PIND & (1<<s1)) || (k341==1)){/////
+            k341=1;
+            _delay_ms(ret);
+            if (PIND & (1<<s1)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k341=0;
+                       
+
+            }
+            if (PIND & (1<<s2)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k341=0;
+         
+            }
+            if (PIND & (1<<s3)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k341=0;
+         
+            }
+            if (PIND & (1<<s4)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k341=0;
+         
+            }
+           
+
+          }
+          ///////////////combinacion 4-2-x
+          while ((PIND & (1<<s2)) || (k342==1)){
+            k342=1;
+            _delay_ms(ret);
+            if (PIND & (1<<s1)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k342=0;
+           
+
+            }
+            if (PIND & (1<<s2)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k342=0;
+         
+            }
+            if (PIND & (1<<s3)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k342=0;
+         
+            }
+            if (PIND & (1<<s4)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k342=0;
+         
+            }
+         
+          }
+          ///////////////combinacion 4-3-x
+          while ((PIND & (1<<s3)) || (k343==1)){
+            k343=1;
+            _delay_ms(ret);
+            if (PIND & (1<<s1)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k343=0;
+           
+
+            }
+            if (PIND & (1<<s2)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k343=0;
+         
+            }
+            if (PIND & (1<<s3)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k343=0;
+         
+            }
+            if (PIND & (1<<s4)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k343=0;
+         
+            }
+         
+          }
+          //////////////combinacion 4-4-x
+          while ((PIND & (1<<s4)) || (k344==1)){
+            k344=1;
+            _delay_ms(ret);
+            if (PIND & (1<<s1)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot1();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k344=0;
+           
+
+            }
+            if (PIND & (1<<s2)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot2();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k344=0;
+         
+            }
+            if (PIND & (1<<s3)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot3();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k344=0;
+         
+            }
+            if (PIND & (1<<s4)){
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              mot4();
+              _delay_ms(t3);
+              off();
+              k3=0;
+              k34=0;
+              k344=0;
+         
+            }
+         
+          }
+
+        }
+       
+
+       
+       
+      }
+      ///////////////////////////////////////////////////////////(PIND & (1<<s4)
+      while ((PIND & (1<<s4)) && vas==1){
+        _delay_ms(ret);
+        mot1();
+        _delay_ms(t4);
+        off();
+        ///
+        mot2();
+        _delay_ms(t4);
+        off();
+        ///
+        mot3();
+        _delay_ms(t4);
+        off();
+        ////
+        mot4();
+        _delay_ms(t4);
+        off();
+
+
+       
+
+       
+       
+      }
+
+     
+    }
+  }  
+ 
