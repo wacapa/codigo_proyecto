@@ -9,11 +9,11 @@ char keys[rowsCount][columsCount] = {
    { '1','2','3' },
    { '4','5','6' },
    { '7','8','9'},
-   { '#','0','*' }
+   { '*','0','#' }
 };
 
-const byte rowPins[rowsCount] = { 8, 7, 6, 5 };
-const byte columnPins[columsCount] = { 4, 3, 2 };
+const byte rowPins[rowsCount] = {2, 3, 4, 5};//{ 8, 7, 6, 5 };
+const byte columnPins[columsCount] = {6, 7, 8};//{ 4, 3, 2 };
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, columnPins, rowsCount, columsCount);
 
@@ -75,7 +75,7 @@ void loop(){
     
     delay(500);
     if (key=='1'){
-      divi =3000;
+      divi =5000;
       
       while(c1<1){
         char key1=keypad.getKey();
@@ -90,7 +90,7 @@ void loop(){
     }
 
     if (key=='2'){
-      divi =3500;
+      divi =2500;
       
       while(c2<2){
         char key2=keypad.getKey();
@@ -105,7 +105,7 @@ void loop(){
       
     }
     if (key=='3'){
-      divi =1750;
+      divi =1666;
       
       while(c3<3){
         char key3=keypad.getKey();
